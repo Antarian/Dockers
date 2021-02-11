@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  db:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: dbsudopass
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: dbpass
+    # database-dir is path to folder where you want to store your database files
+    volumes:
+      - ../database-dir:/var/lib/mysql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  php:
+    build:
+      context: ./
+      dockerfile: ./php/Dockerfile
+    restart: always
+    ports:
+      - 8000:80
+    depends_on:
+      - db
+    # change public/ folder to one which contains main index.php file
+    # or comment this one and uncomment specific command for Laravel
+    command: ["php", "-S", "0.0.0.0:80", "-t", "public/"]
+    # Laravel server command
+    # command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=80"]
+    # project-dir is path to your local php project
+    volumes:
+      - ../project-dir:/usr/src/app
